@@ -26,6 +26,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/half_float.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include "shaders.h"    
 #include "shapes.h"    
 #include "lights.h"    
@@ -48,16 +49,18 @@ glm::mat4 proj=glm::perspective(80.0f,//fovy
 				  		        1.0f,//aspect
 						        0.01f,1000.f); //near, far
 
-glm::vec3 eye      = glm::vec3(10.0f, 1.0f, 10.0f);
-glm::vec3 eyeDir = eye + glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 eye      = glm::vec3(1.0f, 0.0f, 1.0f);
+glm::vec3 eyeDir = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 eyeUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // Flags for keypresses to enable smooth motion
 GLboolean forwardPressed = false;
-GLboolean backwardsPressed = false;
+GLboolean backwardPressed = false;
 GLboolean leftPressed = false;
 GLboolean rightPressed = false;
 
+GLfloat cameraRotationAngle = 0.0f;
+glm::vec3 cameraTranslation = glm::vec3(10.0f, 0.0f, 10.0f);
 
 class ShaderParamsC
 {
@@ -152,8 +155,11 @@ void RenderObjects()
 	//			     glm::vec3(0,0,0),  //destination
 	//			     glm::vec3(0,1,0)); //up
 
-	view=glm::lookAt(eye,//eye
-				     eyeDir + eye,  //destination
+	glm::vec3 moveEye = eye + cameraTranslation; // Eye after being translated
+	glm::vec3 moveEyeDir = eyeDir + moveEye;// Eye direction after being translated... and rotated
+	moveEyeDir = glm::rotate(moveEyeDir, cameraRotationAngle, glm::vec3(0.0, 0.1, 0.0)); //TODO There is a bug here
+	view=glm::lookAt(moveEye,//eye
+				     moveEyeDir,  //destination
 				     eyeUp); //up)
 
 	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
@@ -178,6 +184,21 @@ void Idle(void)
     glClearColor(0.1,0.1,0.1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     ftime+=0.05;
+	// Adjust movement if keys are pressed
+	if (forwardPressed) {
+		//Get rotated eye and eyedir
+		//glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 0.1f, 0.0f));
+		cameraTranslation += glm::normalize(eyeDir - eye) / 10.0f;
+	}
+	else if (backwardPressed) {
+		cameraTranslation -= glm::normalize(eyeDir - eye) / 10.0f;
+	}
+	if (leftPressed) {
+		cameraRotationAngle += 1.0f;
+	}
+	else if (rightPressed) {
+		cameraRotationAngle -= 1.0f;
+	}
     glUseProgram(shaderProgram);
     RenderObjects();
     glutSwapBuffers();  
@@ -194,31 +215,16 @@ void Kbd(unsigned char a, int x, int y)
 	switch(a)
 	{
  	  case 27 : exit(0);break;
-	 /* case 'r': 
+	  case 'r': 
 	  case 'R': {sphere->SetKd(glm::vec3(1,0,0));break;}
 	  case 'g': 
 	  case 'G': {sphere->SetKd(glm::vec3(0,1,0));break;}
 	  case 'b': 
 	  case 'B': {sphere->SetKd(glm::vec3(0,0,1));break;}
 	  case 'w': 
-	  case 'W': {sphere->SetKd(glm::vec3(0.7,0.7,0.7));break;}*/
+	  case 'W': {sphere->SetKd(glm::vec3(0.7,0.7,0.7));break;}
 	  case '+': {sphere->SetSh(sh+=1);break;}
 	  case '-': {sphere->SetSh(sh-=1);if (sh<1) sh=1;break;}
-	  case 'w':
-	  case 'W': {
-		  //forwardPressed = true;
-		  auto tmp = glm::normalize(eyeDir - eye) / 10.f;
-		  eyeDir += tmp;
-		  eye += tmp;
-		  //eyeDir = glm::vec3(glm::translate(glm::mat4(1.0), glm::vec3(0.0, 1.0, 0.0)) * glm::vec4(eyeDir, 1.0));
-		  break; }
-	  case 'a':
-	  case 'A': {eyeDir = glm::vec3(glm::rotate(glm::mat4(1.0), 1.0f, glm::vec3(0.0, 1.0, 0.0)) * glm::vec4(eyeDir, 1.0)); break;}
-	  case 's':
-	  case 'S':
-	  case 'd':
-	  case 'D': {eyeDir = glm::vec3(glm::rotate(glm::mat4(1.0), -1.0f, glm::vec3(0.0, 1.0, 0.0)) * glm::vec4(eyeDir, 1.0)); break; }
-
 	}
 	cout << "shineness="<<sh<<endl;
 	glutPostRedisplay();
@@ -230,21 +236,21 @@ void SpecKbdPress(int a, int x, int y)
 {
    	switch(a)
 	{
- 	  case GLUT_KEY_LEFT  : 
-		  {
-			  break;
+ 	  case GLUT_KEY_LEFT: {
+		  leftPressed = true;
+		  break;
 		  }
-	  case GLUT_KEY_RIGHT : 
-		  {
-			break;
+	  case GLUT_KEY_RIGHT: {
+		  rightPressed = true;
+		  break;
 		  }
- 	  case GLUT_KEY_DOWN    : 
-		  {
-			break;
+ 	  case GLUT_KEY_DOWN: {
+		  backwardPressed = true;
+		  break;
 		  }
-	  case GLUT_KEY_UP  :
-		  {
-			break;
+	  case GLUT_KEY_UP:{
+		  forwardPressed = true;
+		  break;
 		  }
 
 	}
@@ -256,22 +262,22 @@ void SpecKbdRelease(int a, int x, int y)
 {
 	switch(a)
 	{
- 	  case GLUT_KEY_LEFT  : 
-		  {
-			  break;
-		  }
-	  case GLUT_KEY_RIGHT : 
-		  {
-			  break;
-		  }
- 	  case GLUT_KEY_DOWN  : 
-		  {
-			break;
-		  }
-	  case GLUT_KEY_UP  :
-		  {
-			break;
-		  }
+	case GLUT_KEY_LEFT: {
+		leftPressed = false;
+		break;
+	}
+	case GLUT_KEY_RIGHT: {
+		rightPressed = false;
+		break;
+	}
+	case GLUT_KEY_DOWN: {
+		backwardPressed = false;
+		break;
+	}
+	case GLUT_KEY_UP: {
+		forwardPressed = false;
+		break;
+	}
 	}
 	glutPostRedisplay();
 }
