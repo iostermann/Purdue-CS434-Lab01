@@ -52,12 +52,6 @@ glm::vec3 eye      = glm::vec3(10.0f, 1.0f, 10.0f);
 glm::vec3 eyeDir = eye + glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 eyeUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
-// Flags for keypresses to enable smooth motion
-GLboolean forwardPressed = false;
-GLboolean backwardsPressed = false;
-GLboolean leftPressed = false;
-GLboolean rightPressed = false;
-
 
 class ShaderParamsC
 {
@@ -206,7 +200,6 @@ void Kbd(unsigned char a, int x, int y)
 	  case '-': {sphere->SetSh(sh-=1);if (sh<1) sh=1;break;}
 	  case 'w':
 	  case 'W': {
-		  //forwardPressed = true;
 		  auto tmp = glm::normalize(eyeDir - eye) / 10.f;
 		  eyeDir += tmp;
 		  eye += tmp;

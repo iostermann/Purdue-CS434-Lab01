@@ -175,15 +175,42 @@ SphereC::SphereC(int stacks, int slices, GLfloat r)
 
 void CubeC::InitArrays()
 {
-	glGenVertexArrays(1,&vaID);
+	points = vertex.size();
+	normals = normal.size();
+
+	//get the vertex array handle and bind it
+	glGenVertexArrays(1, &vaID);
 	glBindVertexArray(vaID);
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	points=vertex.size();
-	glBufferData(GL_ARRAY_BUFFER, points*sizeof(GLfloat), &vertex[0], GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+
+	//the vertex array will have two vbos, vertices and normals
+	glGenBuffers(2, vboHandles);
+	GLuint verticesID = vboHandles[0];
+	GLuint normalsID = vboHandles[1];
+
+	//send vertices
+	glBindBuffer(GL_ARRAY_BUFFER, verticesID);
+	glBufferData(GL_ARRAY_BUFFER, points * sizeof(GLfloat), &vertex[0], GL_STATIC_DRAW);
+	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 	vertex.clear(); //no need for the vertex data, it is on the GPU now
+
+//send normals
+	glBindBuffer(GL_ARRAY_BUFFER, normalsID);
+	glBufferData(GL_ARRAY_BUFFER, normals * sizeof(GLfloat), &normal[0], GL_STATIC_DRAW);
+	glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(1);
+	normal.clear(); //no need for the normal data, it is on the GPU now
+
+
+	//glGenVertexArrays(1,&vaID);
+	//glBindVertexArray(vaID);
+	//glGenBuffers(1, &buffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	//points=vertex.size();
+	//glBufferData(GL_ARRAY_BUFFER, points*sizeof(GLfloat), &vertex[0], GL_STATIC_DRAW);
+	//glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0); 
+	//glEnableVertexAttribArray(0);
+	//vertex.clear(); //no need for the vertex data, it is on the GPU now
 }
 
 
@@ -203,26 +230,66 @@ void CubeC::Generate()
 	const glm::vec3 F=glm::vec3(+0.5f,-0.5f,+0.5f);
 	const glm::vec3 G=glm::vec3(+0.5f,+0.5f,+0.5f);
 	const glm::vec3 H=glm::vec3(-0.5f,+0.5f,+0.5f);
-	AddVertex(&vertex,&A);AddVertex(&vertex,&B);AddVertex(&vertex,&C);
-	AddVertex(&vertex,&A);AddVertex(&vertex,&C);AddVertex(&vertex,&D);
-	AddVertex(&vertex,&A);AddVertex(&vertex,&E);AddVertex(&vertex,&F);
-	AddVertex(&vertex,&A);AddVertex(&vertex,&F);AddVertex(&vertex,&B);
-	AddVertex(&vertex,&B);AddVertex(&vertex,&F);AddVertex(&vertex,&G);
-	AddVertex(&vertex,&B);AddVertex(&vertex,&G);AddVertex(&vertex,&C);
-	AddVertex(&vertex,&C);AddVertex(&vertex,&G);AddVertex(&vertex,&H);
-	AddVertex(&vertex,&C);AddVertex(&vertex,&H);AddVertex(&vertex,&D);
-	AddVertex(&vertex,&D);AddVertex(&vertex,&H);AddVertex(&vertex,&E);
-	AddVertex(&vertex,&D);AddVertex(&vertex,&E);AddVertex(&vertex,&A);
-	AddVertex(&vertex,&E);AddVertex(&vertex,&F);AddVertex(&vertex,&G);
-	AddVertex(&vertex,&E);AddVertex(&vertex,&G);AddVertex(&vertex,&H);
+
+	AddVertex(&vertex, &A); AddVertex(&vertex, &B); AddVertex(&vertex, &C);
+	AddVertex(&vertex, &A); AddVertex(&vertex, &C); AddVertex(&vertex, &D);
+	AddVertex(&vertex, &A); AddVertex(&vertex, &E); AddVertex(&vertex, &F);
+	AddVertex(&vertex, &A); AddVertex(&vertex, &F); AddVertex(&vertex, &B);
+	AddVertex(&vertex, &B); AddVertex(&vertex, &F); AddVertex(&vertex, &G);
+	AddVertex(&vertex, &B); AddVertex(&vertex, &G); AddVertex(&vertex, &C);
+	AddVertex(&vertex, &C); AddVertex(&vertex, &G); AddVertex(&vertex, &H);
+	AddVertex(&vertex, &C); AddVertex(&vertex, &H); AddVertex(&vertex, &D);
+	AddVertex(&vertex, &D); AddVertex(&vertex, &H); AddVertex(&vertex, &E);
+	AddVertex(&vertex, &D); AddVertex(&vertex, &E); AddVertex(&vertex, &A);
+	AddVertex(&vertex, &E); AddVertex(&vertex, &G); AddVertex(&vertex, &F);
+	AddVertex(&vertex, &E); AddVertex(&vertex, &H); AddVertex(&vertex, &G);
+
+	// Create some normals to add
+	glm::vec3 oneN =   glm::normalize(glm::vec3( 0,  0, -1));
+	glm::vec3 twoN =   glm::normalize(glm::vec3( 0, -1,  0));
+	glm::vec3 threeN = glm::normalize(glm::vec3( 1,  0,  0));
+	glm::vec3 fourN =  glm::normalize(glm::vec3( 0,  1,  0));
+	glm::vec3 fiveN =  glm::normalize(glm::vec3(-1,  0,  0));
+	glm::vec3 sixN =   glm::normalize(glm::vec3( 0,  0,  1));
+
+	AddVertex(&normal, &oneN); AddVertex(&normal, &oneN); AddVertex(&normal, &oneN);
+	AddVertex(&normal, &oneN); AddVertex(&normal, &oneN); AddVertex(&normal, &oneN);
+	AddVertex(&normal, &twoN); AddVertex(&normal, &twoN); AddVertex(&normal, &twoN);
+	AddVertex(&normal, &twoN); AddVertex(&normal, &twoN); AddVertex(&normal, &twoN);
+	AddVertex(&normal, &threeN); AddVertex(&normal, &threeN); AddVertex(&normal, &threeN);
+	AddVertex(&normal, &threeN); AddVertex(&normal, &threeN); AddVertex(&normal, &threeN);
+	AddVertex(&normal, &fourN); AddVertex(&normal, &fourN); AddVertex(&normal, &fourN);
+	AddVertex(&normal, &fourN); AddVertex(&normal, &fourN); AddVertex(&normal, &fourN);
+	AddVertex(&normal, &fiveN); AddVertex(&normal, &fiveN); AddVertex(&normal, &fiveN);
+	AddVertex(&normal, &fiveN); AddVertex(&normal, &fiveN); AddVertex(&normal, &fiveN);
+	AddVertex(&normal, &sixN); AddVertex(&normal, &sixN); AddVertex(&normal, &sixN);
+	AddVertex(&normal, &sixN); AddVertex(&normal, &sixN); AddVertex(&normal, &sixN);
 }
 
 void CubeC::Render()
 {
 	glBindVertexArray(vaID);
+	//	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	//	glEnableVertexAttribArray(0);
+		//material properties
+	glUniform3fv(kaParameter, 1, glm::value_ptr(ka));
+	glUniform3fv(kdParameter, 1, glm::value_ptr(kd));
+	glUniform3fv(ksParameter, 1, glm::value_ptr(ks));
+	glUniform1fv(shParameter, 1, &sh);
+	//model matrix
+	glUniformMatrix4fv(modelParameter, 1, GL_FALSE, glm::value_ptr(model));
+	//model for normals
+	glUniformMatrix3fv(modelViewNParameter, 1, GL_FALSE, glm::value_ptr(modelViewN));
+	glDrawArrays(GL_TRIANGLES, 0, 3 * points);
+
+
+
+
+	/*glBindVertexArray(vaID);
+
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glEnableVertexAttribArray(0);
     glUniformMatrix4fv(modelParameter,1,GL_FALSE,glm::value_ptr(model));
-	glDrawArrays(GL_TRIANGLES, 0, 3*points);
+	glDrawArrays(GL_TRIANGLES, 0, 3*points);*/
 }
 
