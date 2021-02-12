@@ -49,9 +49,11 @@ glm::mat4 proj=glm::perspective(80.0f,//fovy
 				  		        1.0f,//aspect
 						        0.01f,1000.f); //near, far
 
-glm::vec3 eye      = glm::vec3(1.0f, 0.0f, 1.0f);
-glm::vec3 eyeDir = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 eyeUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+const glm::vec3 up = glm::vec3(0.0, 0.1, 0.0);
+
+glm::vec3 eye      = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 eyeDir   = glm::vec3(-1.0f, 0.0f, -1.0f);
+glm::vec3 eyeUp    = up;
 
 // Flags for keypresses to enable smooth motion
 GLboolean forwardPressed = false;
@@ -155,12 +157,14 @@ void RenderObjects()
 	//			     glm::vec3(0,0,0),  //destination
 	//			     glm::vec3(0,1,0)); //up
 
-	glm::vec3 moveEye = eye + cameraTranslation; // Eye after being translated
-	glm::vec3 moveEyeDir = eyeDir + moveEye;// Eye direction after being translated... and rotated
-	moveEyeDir = glm::rotate(moveEyeDir, cameraRotationAngle, glm::vec3(0.0, 0.1, 0.0)); //TODO There is a bug here
-	view=glm::lookAt(moveEye,//eye
-				     moveEyeDir,  //destination
+	glm::vec3 movedEye = eye + cameraTranslation; // Eye after being translated
+	glm::vec3 movedEyeDir = glm::rotate(eyeDir, cameraRotationAngle, up) + cameraTranslation; // Eye direction after being translated... and rotated
+	//moveEyeDir = glm::rotate(moveEyeDir, cameraRotationAngle, up); //TODO There is a bug here
+	view=glm::lookAt(movedEye,//eye
+				     movedEyeDir,  //destination
 				     eyeUp); //up)
+	//view = glm::rotate(view, cameraRotationAngle,up);
+
 
 	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
 	//set the light
@@ -188,10 +192,12 @@ void Idle(void)
 	if (forwardPressed) {
 		//Get rotated eye and eyedir
 		//glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 0.1f, 0.0f));
-		cameraTranslation += glm::normalize(eyeDir - eye) / 10.0f;
+		glm::vec3 eyeDirRotated = glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+		cameraTranslation += glm::normalize(eyeDirRotated - eye) / 10.0f;
 	}
 	else if (backwardPressed) {
-		cameraTranslation -= glm::normalize(eyeDir - eye) / 10.0f;
+		glm::vec3 eyeDirRotated = glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+		cameraTranslation -= glm::normalize(eyeDirRotated - eye) / 10.0f;
 	}
 	if (leftPressed) {
 		cameraRotationAngle += 1.0f;
