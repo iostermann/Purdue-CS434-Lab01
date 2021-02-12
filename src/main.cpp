@@ -49,10 +49,10 @@ glm::mat4 proj=glm::perspective(80.0f,//fovy
 				  		        1.0f,//aspect
 						        0.01f,1000.f); //near, far
 
-const glm::vec3 up = glm::vec3(0.0, 0.1, 0.0);
+const glm::vec3 up = glm::vec3(0.0, 1.0f, 0.0);
 
 glm::vec3 eye      = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 eyeDir   = glm::vec3(-1.0f, 0.0f, -1.0f);
+glm::vec3 eyeDir   = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 eyeUp    = up;
 
 // Flags for keypresses to enable smooth motion
@@ -62,7 +62,7 @@ GLboolean leftPressed = false;
 GLboolean rightPressed = false;
 
 GLfloat cameraRotationAngle = 0.0f;
-glm::vec3 cameraTranslation = glm::vec3(10.0f, 0.0f, 10.0f);
+glm::vec3 cameraTranslation = glm::vec3(0.0f, 0.0f, 0.0f);
 
 class ShaderParamsC
 {
@@ -125,45 +125,72 @@ void Arm(glm::mat4 m)
 	sphere->Render();
 }
 
-
-void CubeArm(glm::mat4 m)
+void DrawWindmill(glm::mat4 model, Windmill wm)
 {
-	m = glm::translate(m, glm::vec3(0, 4.0, 0.0));
-	m = glm::scale(m, glm::vec3(1.2f, 1.2f, 1.2f));
-	cube->SetModel(m);
-	// Normals
-	glm::mat3 modelViewN = glm::mat3(view * m);
+	// Draw the center sphere
+	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+	sphere->SetModel(model);
+	glm::mat3 modelViewN = glm::mat3(view * model);
 	modelViewN = glm::transpose(glm::inverse(modelViewN));
-	cube->SetModelViewN(modelViewN);
-	cube->Render();
+	sphere->SetModelViewN(modelViewN);
+	sphere->Render();
+	
+	//// Draw a blade
+	//GLfloat offset = (360.f / 4);
+	//model = glm::rotate(model, -20.0f * ftime, glm::vec3(0.0, 0.0, 1.0));
+	//model = glm::translate(model, glm::vec3(0.0, 1.0, 0.0));
+	//sphere->SetModel(glm::scale(model, glm::vec3(0.5f, 2.0f, 0.5f)));
+
+	//modelViewN = glm::mat3(view * model);
+	//modelViewN = glm::transpose(glm::inverse(modelViewN));
+	//sphere->SetModelViewN(modelViewN);
+	//sphere->Render();
+
+
+
+	// To change speed when blades lost, check numBlades and assign a multiplier
+	GLfloat timeMult = -20.0f;
+	GLint bladeID = 0;
+
+	for (vector<GLboolean>::iterator it = wm.blades.begin(); it != wm.blades.end(); ++it, ++bladeID) {
+		//Create new model matrix so next blade isn't screwed up
+		glm::mat4 bladeModel = model;
+		if (*it) { // If the blade is still alive 
+
+			// Draw a blade
+			GLfloat rotAngle = ((360.0f / wm.numBlades) * bladeID) + (ftime * timeMult);
+			 
+			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
+			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
+			sphere->SetModel(glm::scale(bladeModel, glm::vec3(0.5f, 2.0f, 0.5f)));
+
+			glm::mat3 bladeModelViewN = glm::mat3(view * bladeModel);
+			bladeModelViewN = glm::transpose(glm::inverse(bladeModelViewN));
+			sphere->SetModelViewN(bladeModelViewN);
+			sphere->Render();
+
+		}
+	}
+
 
 }
-
 
 //the main rendering function
 void RenderObjects()
 {
-	const int range=3;
+	//const int range=3;
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glColor3f(0,0,0);
 	glPointSize(2);
 	glLineWidth(1);
 	//set the projection and view once for the scene
 	glUniformMatrix4fv(params.projParameter,1,GL_FALSE,glm::value_ptr(proj));
-	//view=glm::lookAt(glm::vec3(25*sin(ftime/40.f),5.f,15*cos(ftime/40.f)),//eye
-	//			     glm::vec3(0,0,0),  //destination
-	//			     glm::vec3(0,1,0)); //up
-	//view=glm::lookAt(glm::vec3(10.f,5.f,10.f),//eye
-	//			     glm::vec3(0,0,0),  //destination
-	//			     glm::vec3(0,1,0)); //up
 
 	glm::vec3 movedEye = eye + cameraTranslation; // Eye after being translated
 	glm::vec3 movedEyeDir = glm::rotate(eyeDir, cameraRotationAngle, up) + cameraTranslation; // Eye direction after being translated... and rotated
-	//moveEyeDir = glm::rotate(moveEyeDir, cameraRotationAngle, up); //TODO There is a bug here
 	view=glm::lookAt(movedEye,//eye
 				     movedEyeDir,  //destination
 				     eyeUp); //up)
-	//view = glm::rotate(view, cameraRotationAngle,up);
 
 
 	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
@@ -172,15 +199,29 @@ void RenderObjects()
 	pos.x=20*sin(ftime/12);pos.y=-10;pos.z=20*cos(ftime/12);pos.w=1;
 	light.SetPos(pos);
 	light.SetShaders();
-	for (int i=-range;i<range;i++)
+
+	// Create some random points in space that aren't too close together
+	// Make a
+
+	vector <pair<glm::mat4, Windmill>> windmills;
+	Windmill test = Windmill(4);
+	glm::mat4 model = glm::translate(glm::mat4(1.0), glm::vec3(0.0f, 0.0f, -4.0f));
+
+	windmills.push_back(pair<glm::mat4, Windmill>(model, test));
+	for (auto& windmill : windmills)
+	{
+		DrawWindmill(windmill.first, windmill.second);
+	}
+
+
+	/*for (int i=-range;i<range;i++)
 	{
 		for (int j=-range;j<range;j++)
 		{
 			glm::mat4 m=glm::translate(glm::mat4(1.0),glm::vec3(4*i,0,4*j));
 			Arm(m);
-			CubeArm(m);
 		}
-	}
+	}*/
 }
 	
 void Idle(void)
@@ -188,6 +229,7 @@ void Idle(void)
     glClearColor(0.1,0.1,0.1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     ftime+=0.05;
+
 	// Adjust movement if keys are pressed
 	if (forwardPressed) {
 		//Get rotated eye and eyedir
@@ -341,19 +383,19 @@ void InitShapes(ShaderParamsC *params)
 	sphere->SetKsToShader(params->ksParameter);
 	sphere->SetShToShader(params->shParameter);
 
-	// and create one unit cube in the origin
-	cube = new CubeC();
-	cube->SetKa(glm::vec3(0.1, 0.1, 0.1));
-	cube->SetKs(glm::vec3(0, 0, 1));
-	cube->SetKd(glm::vec3(0.7, 0.7, 0.7));
-	cube->SetSh(sh);
-	cube->SetModel(glm::mat4(1.0));
-	cube->SetModelMatrixParamToShader(params->modelParameter);
-	cube->SetModelViewNMatrixParamToShader(params->modelViewNParameter);
-	cube->SetKaToShader(params->kaParameter);
-	cube->SetKdToShader(params->kdParameter);
-	cube->SetKsToShader(params->ksParameter);
-	cube->SetShToShader(params->shParameter);
+	//// and create one unit cube in the origin
+	//cube = new CubeC();
+	//cube->SetKa(glm::vec3(0.1, 0.1, 0.1));
+	//cube->SetKs(glm::vec3(0, 0, 1));
+	//cube->SetKd(glm::vec3(0.7, 0.7, 0.7));
+	//cube->SetSh(sh);
+	//cube->SetModel(glm::mat4(1.0));
+	//cube->SetModelMatrixParamToShader(params->modelParameter);
+	//cube->SetModelViewNMatrixParamToShader(params->modelViewNParameter);
+	//cube->SetKaToShader(params->kaParameter);
+	//cube->SetKdToShader(params->kdParameter);
+	//cube->SetKsToShader(params->ksParameter);
+	//cube->SetShToShader(params->shParameter);
 }
 
 int main(int argc, char **argv)

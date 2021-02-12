@@ -91,4 +91,13 @@ private:
 };
 
 
+class Windmill
+{
+public:
+	GLint numBlades;
+	vector <GLboolean> blades;
+	GLboolean isAlive = true;
+	Windmill(GLint numBlades = 4);
+};
+
 #endif

@@ -293,3 +293,8 @@ void CubeC::Render()
 	glDrawArrays(GL_TRIANGLES, 0, 3*points);*/
 }
 
+Windmill::Windmill(GLint numBlades)
+{
+	this->numBlades = numBlades;
+	this->blades.resize(numBlades, true);
+}
