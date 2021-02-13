@@ -1,9 +1,9 @@
 /**********************************/
-/* Lighting					      
-   (C) Bedrich Benes 2021         
+/* Lighting
+   (C) Bedrich Benes 2021
    Diffuse and specular per fragment.
    bbenes@purdue.edu               */
-/**********************************/
+   /**********************************/
 
 #include <algorithm>
 #include <string>
@@ -38,17 +38,17 @@
 
 using namespace std;
 
-bool needRedisplay=false;
+bool needRedisplay = false;
 ShapesC* sphere;
 ShapesC* cube;
 
 //shader program ID
 GLuint shaderProgram;
-GLfloat ftime=0.f;
-glm::mat4 view=glm::mat4(1.0);
-glm::mat4 proj=glm::perspective(80.0f,//fovy
-				  		        1.0f,//aspect
-						        0.01f,1000.f); //near, far
+GLfloat ftime = 0.f;
+glm::mat4 view = glm::mat4(1.0);
+glm::mat4 proj = glm::perspective(80.0f,//fovy
+	1.0f,//aspect
+	0.01f, 1000.f); //near, far
 
 const GLfloat bulletSpeed = 1.0f;
 const GLfloat bulletSize = 0.2f;
@@ -57,9 +57,9 @@ const glm::vec3 up = glm::vec3(0.0, 1.0f, 0.0);
 const GLfloat rotTimeMult = -20.0f;
 
 
-glm::vec3 eye      = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 eyeDir   = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 eyeUp    = up;
+glm::vec3 eye = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 eyeDir = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 eyeUp = up;
 
 // Flags for keypresses to enable smooth motion
 GLboolean forwardPressed = false;
@@ -95,10 +95,10 @@ LightC light;
 
 
 //the main window size
-GLint wWindow=800;
-GLint hWindow=800;
+GLint wWindow = 800;
+GLint hWindow = 800;
 
-float sh=200;
+float sh = 200;
 
 /*********************************
 Some OpenGL-related functions
@@ -107,50 +107,50 @@ Some OpenGL-related functions
 //called when a window is reshaped
 void Reshape(int w, int h)
 {
-	glViewport(0,0,w, h);       
-    glEnable(GL_DEPTH_TEST);
+	glViewport(0, 0, w, h);
+	glEnable(GL_DEPTH_TEST);
 	//remember the settings for the camera
-    wWindow=w;
-    hWindow=h;
+	wWindow = w;
+	hWindow = h;
 }
 
 void Arm(glm::mat4 m)
 {
 	//let's use instancing
-	m=glm::translate(m,glm::vec3(0,0.5,0.0));
-	m=glm::scale(m,glm::vec3(1.0f,1.0f,1.0f));
+	m = glm::translate(m, glm::vec3(0, 0.5, 0.0));
+	m = glm::scale(m, glm::vec3(1.0f, 1.0f, 1.0f));
 	sphere->SetModel(m);
 	//now the normals
-	glm::mat3 modelViewN=glm::mat3(view*m);
-	modelViewN= glm::transpose(glm::inverse(modelViewN));
+	glm::mat3 modelViewN = glm::mat3(view * m);
+	modelViewN = glm::transpose(glm::inverse(modelViewN));
 	sphere->SetModelViewN(modelViewN);
 	sphere->Render();
 
-	m=glm::translate(m,glm::vec3(0.0,0.5,0.0));
-	m=glm::rotate(m,-20.0f*ftime,glm::vec3(0.0,0.0,1.0));
-	m=glm::translate(m,glm::vec3(0.0,1.5,0.0));
-	sphere->SetModel(glm::scale(m,glm::vec3(0.5f,1.0f,0.5f)));
+	m = glm::translate(m, glm::vec3(0.0, 0.5, 0.0));
+	m = glm::rotate(m, -20.0f * ftime, glm::vec3(0.0, 0.0, 1.0));
+	m = glm::translate(m, glm::vec3(0.0, 1.5, 0.0));
+	sphere->SetModel(glm::scale(m, glm::vec3(0.5f, 1.0f, 0.5f)));
 
-	modelViewN=glm::mat3(view*m);
-	modelViewN= glm::transpose(glm::inverse(modelViewN));
+	modelViewN = glm::mat3(view * m);
+	modelViewN = glm::transpose(glm::inverse(modelViewN));
 	sphere->SetModelViewN(modelViewN);
 	sphere->Render();
 }
 
 void DrawWindmill(glm::mat4 model, Windmill* wm)
 {
-	if (wm->lightingEffectFrames >  0) {
+	if (wm->lightingEffectFrames > 0) {
 		sphere->SetKa(glm::vec3(0.5, 0.5, 0.5));
 		sphere->SetKs(glm::vec3(1, 1, 0));
 		sphere->SetKd(glm::vec3(1.0, 0.0, 0.0));
 		sphere->SetSh(1);
 		wm->lightingEffectFrames--;
 	}
-	else { 
+	else {
 		sphere->SetKa(glm::vec3(0.1, 0.1, 0.1));
 		sphere->SetKs(glm::vec3(0, 0, 1));
 		sphere->SetKd(glm::vec3(0.7, 0.7, 0.7));
-		sphere->SetSh(sh); 
+		sphere->SetSh(sh);
 	}
 
 	// Draw the center sphere
@@ -162,7 +162,7 @@ void DrawWindmill(glm::mat4 model, Windmill* wm)
 	sphere->Render();
 
 	// To change speed when blades lost, check numBlades and assign a multiplier to rotTimeMult
-	GLfloat speed = rotTimeMult * (((GLfloat)wm->numBlades + 3.0f) / (GLfloat)wm->bladesLeft );
+	GLfloat speed = rotTimeMult * (((GLfloat)wm->numBlades + 3.0f) / (GLfloat)wm->bladesLeft);
 	GLint bladeID = 0;
 
 	for (vector<GLboolean>::iterator it = wm->blades.begin(); it != wm->blades.end(); ++it, ++bladeID) {
@@ -172,7 +172,7 @@ void DrawWindmill(glm::mat4 model, Windmill* wm)
 
 			// Draw a blade
 			GLfloat rotAngle = ((360.0f / wm->numBlades) * bladeID) + (ftime * speed);
-			 
+
 			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
 			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
 			sphere->SetModel(glm::scale(bladeModel, glm::vec3(0.5f, bladeLength, 0.5f)));
@@ -219,7 +219,7 @@ void DrawBullet(Bullet bullet)
 	sphere->SetSh(shOld);
 }
 
-void FireBullet() 
+void FireBullet()
 {
 	glm::vec3 movedEye = eye + cameraTranslation;
 	glm::vec3 movedEyeDir = glm::rotate(eyeDir, cameraRotationAngle, up) + cameraTranslation;
@@ -239,14 +239,14 @@ void Colissions()
 {
 	vector<vector<pair<glm::mat4, Windmill>>::iterator> WindmillsToKill;
 	// Check every bullet with every blade, blades have a bounding sphere around them of radius 2 
-	for(auto windmillit = windmills.begin(); windmillit != windmills.end(); ++windmillit)
+	for (auto windmillit = windmills.begin(); windmillit != windmills.end(); ++windmillit)
 	{
 		Windmill* wm = &((*windmillit).second);
 		glm::mat4 wmModel = (*windmillit).first;
 
 		GLint bladeID = 0;
-		for (vector<GLboolean>::iterator bladeit = wm->blades.begin(); bladeit != wm->blades.end(); ++bladeit, ++bladeID){
-			if (!wm->blades[bladeID]){ continue; } // Only check blades that are visible
+		for (vector<GLboolean>::iterator bladeit = wm->blades.begin(); bladeit != wm->blades.end(); ++bladeit, ++bladeID) {
+			if (!wm->blades[bladeID]) { continue; } // Only check blades that are visible
 
 			// Need to get point of center of blade
 			glm::mat4 bladeModel = wmModel;
@@ -274,16 +274,17 @@ void Colissions()
 					sphere->SetSh(1);
 					wm->lightingEffectFrames += 15;
 
-				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(*it); } // Cull bullets that are far away
+				}
+				else if (glm::distance(bulletPos, bladeCenter) > 400 && false) { BulletsToKill.push_back(*it); } // Cull bullets that are far away
 			}
 			// Cull bullets that hit something or are far away
-			for (auto& bullet : BulletsToKill) { 
+			for (auto& bullet : BulletsToKill) {
 				// Need to erase like this because using a it doesn't let 2 bullets hit at once, which happens for fast bullets
-				bullets.erase(remove(bullets.begin(), bullets.end(),bullet)); 
+				bullets.erase(remove(bullets.begin(), bullets.end(), bullet));
 			}
 		}
 		if (wm->bladesLeft <= 0) { WindmillsToKill.push_back(windmillit); }
-		
+
 	}
 	// Cull windmills with no blades left
 	for (auto& windmill : WindmillsToKill) { windmills.erase(windmill); }
@@ -296,30 +297,30 @@ void RenderObjects()
 	// Quit game if you kill all the windmills
 	if (windmills.empty()) { exit(0); }
 
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	glColor3f(0,0,0);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glColor3f(0, 0, 0);
 	glPointSize(2);
 	glLineWidth(1);
 	//set the projection and view once for the scene
-	glUniformMatrix4fv(params.projParameter,1,GL_FALSE,glm::value_ptr(proj));
+	glUniformMatrix4fv(params.projParameter, 1, GL_FALSE, glm::value_ptr(proj));
 
 	glm::vec3 movedEye = eye + cameraTranslation; // Eye after being translated
 	glm::vec3 movedEyeDir = glm::rotate(eyeDir, cameraRotationAngle, up) + cameraTranslation; // Eye direction after being translated... and rotated
-	view=glm::lookAt(movedEye,//eye
-				     movedEyeDir,  //destination
-				     eyeUp); //up)
+	view = glm::lookAt(movedEye,//eye
+		movedEyeDir,  //destination
+		eyeUp); //up)
 
 
-	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
+	glUniformMatrix4fv(params.viewParameter, 1, GL_FALSE, glm::value_ptr(view));
 	//set the light
 
 	static glm::vec4 pos;
-	pos.x=20*sin(ftime/12);pos.y=10;pos.z=20*cos(ftime/12);pos.w=1;
+	pos.x = 20 * sin(ftime / 12); pos.y = 10; pos.z = 20 * cos(ftime / 12); pos.w = 1;
 	light.SetPos(pos);
 	light.SetShaders();
 
 	// Render all the windmills
-	for (auto& windmill : windmills){ DrawWindmill(windmill.first, &(windmill.second)); }
+	for (auto& windmill : windmills) { DrawWindmill(windmill.first, &(windmill.second)); }
 
 
 	// Reset the colors in case someone else set them for you for a lighting effect
@@ -337,12 +338,12 @@ void RenderObjects()
 	// Render all the bullets
 	for (auto& bullet : bullets) { DrawBullet(bullet); }
 }
-	
+
 void Idle(void)
 {
-    glClearColor(0.1,0.1,0.1,1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    ftime+=0.05;
+	glClearColor(0.1, 0.1, 0.1, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ftime += 0.05;
 
 	// Adjust movement if keys are pressed
 	if (forwardPressed) {
@@ -361,12 +362,12 @@ void Idle(void)
 	else if (rightPressed) {
 		cameraRotationAngle -= 1.0f;
 	}
-    glUseProgram(shaderProgram);
+	glUseProgram(shaderProgram);
 
 	Colissions();
 
-    RenderObjects();
-    glutSwapBuffers();  
+	RenderObjects();
+	glutSwapBuffers();
 }
 
 void Display(void)
@@ -377,22 +378,22 @@ void Display(void)
 //keyboard callback
 void Kbd(unsigned char a, int x, int y)
 {
-	switch(a)
+	switch (a)
 	{
- 	  case 27 : exit(0);break;
-	  case 'r': 
-	  case 'R': {sphere->SetKd(glm::vec3(1,0,0));break;}
-	  case 'g': 
-	  case 'G': {sphere->SetKd(glm::vec3(0,1,0));break;}
-	  case 'b': 
-	  case 'B': {sphere->SetKd(glm::vec3(0,0,1));break;}
-	  case 'w': 
-	  case 'W': {sphere->SetKd(glm::vec3(0.7,0.7,0.7));break;}
-	  case '+': {sphere->SetSh(sh+=1);break;}
-	  case '-': {sphere->SetSh(sh-=1);if (sh<1) sh=1;break;}
-	  case 32: { FireBullet();break;}
+	case 27: exit(0); break;
+	case 'r':
+	case 'R': {sphere->SetKd(glm::vec3(1, 0, 0)); break; }
+	case 'g':
+	case 'G': {sphere->SetKd(glm::vec3(0, 1, 0)); break; }
+	case 'b':
+	case 'B': {sphere->SetKd(glm::vec3(0, 0, 1)); break; }
+	case 'w':
+	case 'W': {sphere->SetKd(glm::vec3(0.7, 0.7, 0.7)); break; }
+	case '+': {sphere->SetSh(sh += 1); break; }
+	case '-': {sphere->SetSh(sh -= 1); if (sh < 1) sh = 1; break; }
+	case 32: { FireBullet(); break; }
 	}
-	cout << "shineness="<<sh<<endl;
+	cout << "shineness=" << sh << endl;
 	glutPostRedisplay();
 }
 
@@ -400,24 +401,24 @@ void Kbd(unsigned char a, int x, int y)
 //special keyboard callback
 void SpecKbdPress(int a, int x, int y)
 {
-   	switch(a)
+	switch (a)
 	{
- 	  case GLUT_KEY_LEFT: {
-		  leftPressed = true;
-		  break;
-		  }
-	  case GLUT_KEY_RIGHT: {
-		  rightPressed = true;
-		  break;
-		  }
- 	  case GLUT_KEY_DOWN: {
-		  backwardPressed = true;
-		  break;
-		  }
-	  case GLUT_KEY_UP:{
-		  forwardPressed = true;
-		  break;
-		  }
+	case GLUT_KEY_LEFT: {
+		leftPressed = true;
+		break;
+	}
+	case GLUT_KEY_RIGHT: {
+		rightPressed = true;
+		break;
+	}
+	case GLUT_KEY_DOWN: {
+		backwardPressed = true;
+		break;
+	}
+	case GLUT_KEY_UP: {
+		forwardPressed = true;
+		break;
+	}
 
 	}
 	glutPostRedisplay();
@@ -426,7 +427,7 @@ void SpecKbdPress(int a, int x, int y)
 //called when a special key is released
 void SpecKbdRelease(int a, int x, int y)
 {
-	switch(a)
+	switch (a)
 	{
 	case GLUT_KEY_LEFT: {
 		leftPressed = false;
@@ -449,40 +450,40 @@ void SpecKbdRelease(int a, int x, int y)
 }
 
 
-void Mouse(int button,int state,int x,int y)
+void Mouse(int button, int state, int x, int y)
 {
 	cout << "Location is " << "[" << x << "'" << y << "]" << endl;
 }
 
 
-void InitializeProgram(GLuint *program)
+void InitializeProgram(GLuint* program)
 {
 	std::vector<GLuint> shaderList;
 
-//load and compile shaders 	
-	shaderList.push_back(CreateShader(GL_VERTEX_SHADER,   LoadShader("shaders/phong.vert")));
+	//load and compile shaders 	
+	shaderList.push_back(CreateShader(GL_VERTEX_SHADER, LoadShader("shaders/phong.vert")));
 	shaderList.push_back(CreateShader(GL_FRAGMENT_SHADER, LoadShader("shaders/phong.frag")));
 
-//create the shader program and attach the shaders to it
+	//create the shader program and attach the shaders to it
 	*program = CreateProgram(shaderList);
 
-//delete shaders (they are on the GPU now)
+	//delete shaders (they are on the GPU now)
 	std::for_each(shaderList.begin(), shaderList.end(), glDeleteShader);
 
-	params.modelParameter=glGetUniformLocation(*program,"model");
-	params.modelViewNParameter=glGetUniformLocation(*program,"modelViewN");
-	params.viewParameter =glGetUniformLocation(*program,"view");
-	params.projParameter =glGetUniformLocation(*program,"proj");
+	params.modelParameter = glGetUniformLocation(*program, "model");
+	params.modelViewNParameter = glGetUniformLocation(*program, "modelViewN");
+	params.viewParameter = glGetUniformLocation(*program, "view");
+	params.projParameter = glGetUniformLocation(*program, "proj");
 	//now the material properties
-	params.kaParameter=glGetUniformLocation(*program,"mat.ka");
-	params.kdParameter=glGetUniformLocation(*program,"mat.kd");
-	params.ksParameter=glGetUniformLocation(*program,"mat.ks");
-	params.shParameter=glGetUniformLocation(*program,"mat.sh");
+	params.kaParameter = glGetUniformLocation(*program, "mat.ka");
+	params.kdParameter = glGetUniformLocation(*program, "mat.kd");
+	params.ksParameter = glGetUniformLocation(*program, "mat.ks");
+	params.shParameter = glGetUniformLocation(*program, "mat.sh");
 	//now the light properties
-	light.SetLaToShader(glGetUniformLocation(*program,"light.la"));
-	light.SetLdToShader(glGetUniformLocation(*program,"light.ld"));
-	light.SetLsToShader(glGetUniformLocation(*program,"light.ls"));
-	light.SetLposToShader(glGetUniformLocation(*program,"light.lPos"));
+	light.SetLaToShader(glGetUniformLocation(*program, "light.la"));
+	light.SetLdToShader(glGetUniformLocation(*program, "light.ld"));
+	light.SetLsToShader(glGetUniformLocation(*program, "light.ls"));
+	light.SetLposToShader(glGetUniformLocation(*program, "light.lPos"));
 }
 
 void InitShapes(ShaderParamsC* params)
@@ -502,41 +503,41 @@ void InitShapes(ShaderParamsC* params)
 	sphere->SetShToShader(params->shParameter);
 
 	// Create some random points and make windmills from them
-	GLint numWindmills = 4;
-	srand(time(0));
+	GLint numWindmills = 4 + (rand() % 4);
 	for (int i = 0; i < numWindmills; i++)
 	{
 		glm::mat4 model = glm::mat4(1.0);
-		glm::vec3 position = glm::vec3((rand() % 30) - 15, 0.0f,( rand() % 80) - 100);
+		glm::vec3 position = glm::vec3((rand() % 30) - 15, 0.0f, (rand() % 80) - 100);
 		model = glm::translate(model, position);
 		cout << "Making windmill at: \n" << glm::to_string(position) << endl;
-		Windmill w = Windmill(4);
+		Windmill w = Windmill((rand() % 3) + 3);
 		windmills.push_back(pair<glm::mat4, Windmill>(model, w));
 	}
 }
 
-int main(int argc, char **argv)
-{ 
-  glutInitDisplayString("stencil>=2 rgb double depth samples");
-  glutInit(&argc, argv);
-  glutInitWindowSize(wWindow,hWindow);
-  glutInitWindowPosition(500,100);
-  glutCreateWindow("Model View Projection GLSL");
-  GLenum err = glewInit();
-  if (GLEW_OK != err){
-   fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-  }
-  glutDisplayFunc(Display);
-  glutIdleFunc(Idle);
-  glutMouseFunc(Mouse);
-  glutReshapeFunc(Reshape);
-  glutKeyboardFunc(Kbd); //+ and -
-  glutSpecialUpFunc(SpecKbdRelease); //smooth motion
-  glutSpecialFunc(SpecKbdPress);
-  glutIgnoreKeyRepeat(true); // Disable full auto mode...
-  InitializeProgram(&shaderProgram);
-  InitShapes(&params);
-  glutMainLoop();
-  return 0;        
+int main(int argc, char** argv)
+{
+	srand(time(0));
+
+	glutInitDisplayString("stencil>=2 rgb double depth samples");
+	glutInit(&argc, argv);
+	glutInitWindowSize(wWindow, hWindow);
+	glutInitWindowPosition(500, 100);
+	glutCreateWindow("Model View Projection GLSL");
+	GLenum err = glewInit();
+	if (GLEW_OK != err) {
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	}
+	glutDisplayFunc(Display);
+	glutIdleFunc(Idle);
+	glutMouseFunc(Mouse);
+	glutReshapeFunc(Reshape);
+	glutKeyboardFunc(Kbd); //+ and -
+	glutSpecialUpFunc(SpecKbdRelease); //smooth motion
+	glutSpecialFunc(SpecKbdPress);
+	glutIgnoreKeyRepeat(true); // Disable full auto mode...
+	InitializeProgram(&shaderProgram);
+	InitShapes(&params);
+	glutMainLoop();
+	return 0;
 }
-	
