@@ -263,7 +263,8 @@ void Colissions()
 void RenderObjects()
 {
 
-
+	// Quit game if you kill all the windmills
+	if (windmills.empty()) { exit(0); }
 
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glColor3f(0,0,0);
