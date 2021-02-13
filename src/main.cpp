@@ -145,6 +145,7 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 	sphere->Render();
 
 	// To change speed when blades lost, check numBlades and assign a multiplier to rotTimeMult
+	GLfloat speed = rotTimeMult * (((GLfloat)wm.numBlades + 3.0f) / (GLfloat)wm.bladesLeft );
 	GLint bladeID = 0;
 
 	for (vector<GLboolean>::iterator it = wm.blades.begin(); it != wm.blades.end(); ++it, ++bladeID) {
@@ -153,7 +154,7 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 		if (*it) { // If the blade is still alive 
 
 			// Draw a blade
-			GLfloat rotAngle = ((360.0f / wm.numBlades) * bladeID) + (ftime * rotTimeMult);
+			GLfloat rotAngle = ((360.0f / wm.numBlades) * bladeID) + (ftime * speed);
 			 
 			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
 			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
@@ -242,6 +243,7 @@ void Colissions()
 					BulletsToKill.push_back(*it);
 					*bladeit = false;
 					wm->bladesLeft--;
+					cout << "HIT! Blades Left: " << wm->bladesLeft << endl;
 
 				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(*it); } // Cull bullets that are far away
 			}
@@ -260,7 +262,9 @@ void Colissions()
 //the main rendering function
 void RenderObjects()
 {
-	//const int range=3;
+
+
+
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glColor3f(0,0,0);
 	glPointSize(2);
