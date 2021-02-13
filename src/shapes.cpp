@@ -296,5 +296,18 @@ void CubeC::Render()
 Windmill::Windmill(GLint numBlades)
 {
 	this->numBlades = numBlades;
+	this->bladesLeft = numBlades;
 	this->blades.resize(numBlades, true);
+}
+
+Bullet::Bullet()
+{
+
+}
+
+void Bullet::shoot(GLfloat startTime, glm::vec3 startPos, glm::vec3 direction)
+{
+	this->startTime = startTime;
+	this->direction = direction;
+	this->startPos = startPos;
 }

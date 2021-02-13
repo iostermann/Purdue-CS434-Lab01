@@ -20,6 +20,12 @@ public:
 	void SetKd(glm::vec3 diff){kd=diff;}
 	void SetKs(glm::vec3 spec){ks=spec;}
 	void SetSh(float sh){this->sh=sh;}
+
+	glm::vec3 GetKa() { return ka; }
+	glm::vec3 GetKd() { return kd; }
+	glm::vec3 GetKs() { return ks; }
+	float GetSh() { return sh; }
+
 	virtual void SetKaToShader(GLuint uniform){kaParameter=uniform;}
 	virtual void SetKdToShader(GLuint uniform){kdParameter=uniform;};
 	virtual void SetKsToShader(GLuint uniform){ksParameter=uniform;};
@@ -95,9 +101,20 @@ class Windmill
 {
 public:
 	GLint numBlades;
+	GLint bladesLeft;
 	vector <GLboolean> blades;
 	GLboolean isAlive = true;
 	Windmill(GLint numBlades = 4);
+};
+
+class Bullet
+{
+public:
+	GLfloat startTime;
+	glm::vec3 direction;
+	glm::vec3 startPos;
+	Bullet();
+	void shoot(GLfloat startTime, glm::vec3 startPos, glm::vec3 direction);
 };
 
 #endif
