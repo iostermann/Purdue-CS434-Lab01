@@ -38,6 +38,11 @@ public:
 	void SetLa(glm::vec3 par){la=par;};
 	void SetLs(glm::vec3 par){ls=par;};
 	void SetLd(glm::vec3 par){ld=par;};
+
+	glm::vec3 GetLa() { return la; }
+	glm::vec3 GetLd() { return ld; }
+	glm::vec3 GetLs() { return ls; }
+
 	void SetLaToShader(GLuint uniform){laParameter=uniform;};
 	void SetLdToShader(GLuint uniform){ldParameter=uniform;};
 	void SetLsToShader(GLuint uniform){lsParameter=uniform;};

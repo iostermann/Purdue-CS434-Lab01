@@ -70,6 +70,9 @@ GLboolean rightPressed = false;
 GLfloat cameraRotationAngle = 0.0f;
 glm::vec3 cameraTranslation = glm::vec3(0.0f, 0.0f, 0.0f);
 
+// Length of lighting effects in frames
+GLint LightingEffectFrames = 0;
+
 vector <pair<glm::mat4, Windmill>> windmills;
 vector <Bullet> bullets;
 
@@ -168,6 +171,8 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 		}
 	}
 
+	
+
 }
 
 void DrawBullet(Bullet bullet)
@@ -211,6 +216,11 @@ void FireBullet()
 	Bullet tmp = Bullet();
 	tmp.shoot(ftime, startPos, direction);
 	bullets.push_back(tmp);
+
+	// Lighting effect for shooting
+	light.SetLd(glm::vec3(1.0f, 1.0f, 0.0f));
+	LightingEffectFrames += 15;
+
 }
 
 void Colissions()
@@ -245,6 +255,13 @@ void Colissions()
 					wm->bladesLeft--;
 					cout << "HIT! Blades Left: " << wm->bladesLeft << endl;
 
+					// Lighting effect for hit
+					sphere->SetKa(glm::vec3(0.5, 0.5, 0.5));
+					sphere->SetKs(glm::vec3(1, 1, 0));
+					sphere->SetKd(glm::vec3(1.0, 0.0, 0.0));
+					sphere->SetSh(1);
+					LightingEffectFrames += 15;
+
 				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(*it); } // Cull bullets that are far away
 			}
 			// Cull bullets that hit something or are far away
@@ -254,6 +271,7 @@ void Colissions()
 			}
 		}
 		if (wm->bladesLeft <= 0) { WindmillsToKill.push_back(windmillit); }
+		
 	}
 	// Cull windmills with no blades left
 	for (auto& windmill : WindmillsToKill) { windmills.erase(windmill); }
@@ -282,6 +300,7 @@ void RenderObjects()
 
 	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
 	//set the light
+
 	static glm::vec4 pos;
 	pos.x=20*sin(ftime/12);pos.y=10;pos.z=20*cos(ftime/12);pos.w=1;
 	light.SetPos(pos);
@@ -289,6 +308,24 @@ void RenderObjects()
 
 	// Render all the windmills
 	for (auto& windmill : windmills){ DrawWindmill(windmill.first, windmill.second); }
+
+
+	// Reset the colors in case someone else set them for you for a lighting effect
+	if (LightingEffectFrames <= 0) {
+		sphere->SetKa(glm::vec3(0.1, 0.1, 0.1));
+		sphere->SetKs(glm::vec3(0, 0, 1));
+		sphere->SetKd(glm::vec3(0.7, 0.7, 0.7));
+		sphere->SetSh(sh);
+
+		light.SetLa(glm::vec3(0, 0, 0));
+		light.SetLs(glm::vec3(1, 1, 1));
+		light.SetLd(glm::vec3(0.7, 0.7, 0.7));
+	}
+	else {
+		LightingEffectFrames--;
+	}
+
+
 
 	// Render all the bullets
 	for (auto& bullet : bullets) { DrawBullet(bullet); }
