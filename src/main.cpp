@@ -98,7 +98,7 @@ LightC light;
 GLint wWindow = 800;
 GLint hWindow = 800;
 
-float sh = 200;
+float sh = 20;
 
 /*********************************
 Some OpenGL-related functions
@@ -147,10 +147,11 @@ void DrawWindmill(glm::mat4 model, Windmill* wm)
 		wm->lightingEffectFrames--;
 	}
 	else {
-		sphere->SetKa(glm::vec3(0.1, 0.1, 0.1));
-		sphere->SetKs(glm::vec3(0, 0, 1));
-		sphere->SetKd(glm::vec3(0.7, 0.7, 0.7));
-		sphere->SetSh(sh);
+		// asdh values for chrome
+		sphere->SetKa(glm::vec3(0.25, 0.25, 0.25));
+		sphere->SetKs(glm::vec3(0.774597, 0.774597, 0.774597));
+		sphere->SetKd(glm::vec3(0.4, 0.4, 0.4));
+		sphere->SetSh(76.8);
 	}
 
 	// Draw the center sphere
@@ -312,8 +313,8 @@ void RenderObjects()
 
 
 	glUniformMatrix4fv(params.viewParameter, 1, GL_FALSE, glm::value_ptr(view));
-	//set the light
 
+	//set the light
 	static glm::vec4 pos;
 	pos.x = 20 * sin(ftime / 12); pos.y = 10; pos.z = 20 * cos(ftime / 12); pos.w = 1;
 	light.SetPos(pos);
@@ -328,12 +329,9 @@ void RenderObjects()
 		light.SetLa(glm::vec3(0, 0, 0));
 		light.SetLs(glm::vec3(1, 1, 1));
 		light.SetLd(glm::vec3(0.7, 0.7, 0.7));
-	}
-	else {
+	} else {
 		LightingEffectFrames--;
 	}
-
-
 
 	// Render all the bullets
 	for (auto& bullet : bullets) { DrawBullet(bullet); }
@@ -348,7 +346,6 @@ void Idle(void)
 	// Adjust movement if keys are pressed
 	if (forwardPressed) {
 		//Get rotated eye and eyedir
-		//glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 0.1f, 0.0f));
 		glm::vec3 eyeDirRotated = glm::rotate(eyeDir, cameraRotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 		cameraTranslation += glm::normalize(eyeDirRotated - eye) / 10.0f;
 	}
@@ -381,14 +378,6 @@ void Kbd(unsigned char a, int x, int y)
 	switch (a)
 	{
 	case 27: exit(0); break;
-	case 'r':
-	case 'R': {sphere->SetKd(glm::vec3(1, 0, 0)); break; }
-	case 'g':
-	case 'G': {sphere->SetKd(glm::vec3(0, 1, 0)); break; }
-	case 'b':
-	case 'B': {sphere->SetKd(glm::vec3(0, 0, 1)); break; }
-	case 'w':
-	case 'W': {sphere->SetKd(glm::vec3(0.7, 0.7, 0.7)); break; }
 	case '+': {sphere->SetSh(sh += 1); break; }
 	case '-': {sphere->SetSh(sh -= 1); if (sh < 1) sh = 1; break; }
 	case 32: { FireBullet(); break; }
