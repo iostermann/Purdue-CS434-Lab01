@@ -137,8 +137,22 @@ void Arm(glm::mat4 m)
 	sphere->Render();
 }
 
-void DrawWindmill(glm::mat4 model, Windmill wm)
+void DrawWindmill(glm::mat4 model, Windmill* wm)
 {
+	if (wm->lightingEffectFrames >  0) {
+		sphere->SetKa(glm::vec3(0.5, 0.5, 0.5));
+		sphere->SetKs(glm::vec3(1, 1, 0));
+		sphere->SetKd(glm::vec3(1.0, 0.0, 0.0));
+		sphere->SetSh(1);
+		wm->lightingEffectFrames--;
+	}
+	else { 
+		sphere->SetKa(glm::vec3(0.1, 0.1, 0.1));
+		sphere->SetKs(glm::vec3(0, 0, 1));
+		sphere->SetKd(glm::vec3(0.7, 0.7, 0.7));
+		sphere->SetSh(sh); 
+	}
+
 	// Draw the center sphere
 	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
 	sphere->SetModel(model);
@@ -148,16 +162,16 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 	sphere->Render();
 
 	// To change speed when blades lost, check numBlades and assign a multiplier to rotTimeMult
-	GLfloat speed = rotTimeMult * (((GLfloat)wm.numBlades + 3.0f) / (GLfloat)wm.bladesLeft );
+	GLfloat speed = rotTimeMult * (((GLfloat)wm->numBlades + 3.0f) / (GLfloat)wm->bladesLeft );
 	GLint bladeID = 0;
 
-	for (vector<GLboolean>::iterator it = wm.blades.begin(); it != wm.blades.end(); ++it, ++bladeID) {
+	for (vector<GLboolean>::iterator it = wm->blades.begin(); it != wm->blades.end(); ++it, ++bladeID) {
 		//Create new model matrix so next blade isn't screwed up
 		glm::mat4 bladeModel = model;
 		if (*it) { // If the blade is still alive 
 
 			// Draw a blade
-			GLfloat rotAngle = ((360.0f / wm.numBlades) * bladeID) + (ftime * speed);
+			GLfloat rotAngle = ((360.0f / wm->numBlades) * bladeID) + (ftime * speed);
 			 
 			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
 			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
@@ -170,8 +184,6 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 
 		}
 	}
-
-	
 
 }
 
@@ -260,7 +272,7 @@ void Colissions()
 					sphere->SetKs(glm::vec3(1, 1, 0));
 					sphere->SetKd(glm::vec3(1.0, 0.0, 0.0));
 					sphere->SetSh(1);
-					LightingEffectFrames += 15;
+					wm->lightingEffectFrames += 15;
 
 				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(*it); } // Cull bullets that are far away
 			}
@@ -307,16 +319,11 @@ void RenderObjects()
 	light.SetShaders();
 
 	// Render all the windmills
-	for (auto& windmill : windmills){ DrawWindmill(windmill.first, windmill.second); }
+	for (auto& windmill : windmills){ DrawWindmill(windmill.first, &(windmill.second)); }
 
 
 	// Reset the colors in case someone else set them for you for a lighting effect
 	if (LightingEffectFrames <= 0) {
-		sphere->SetKa(glm::vec3(0.1, 0.1, 0.1));
-		sphere->SetKs(glm::vec3(0, 0, 1));
-		sphere->SetKd(glm::vec3(0.7, 0.7, 0.7));
-		sphere->SetSh(sh);
-
 		light.SetLa(glm::vec3(0, 0, 0));
 		light.SetLs(glm::vec3(1, 1, 1));
 		light.SetLd(glm::vec3(0.7, 0.7, 0.7));

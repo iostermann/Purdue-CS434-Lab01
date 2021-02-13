@@ -104,6 +104,7 @@ public:
 	GLint bladesLeft;
 	vector <GLboolean> blades;
 	GLboolean isAlive = true;
+	GLint lightingEffectFrames = 0;
 	Windmill(GLint numBlades = 4);
 };
 
