@@ -157,7 +157,7 @@ void DrawWindmill(glm::mat4 model, Windmill wm)
 			 
 			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
 			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
-			sphere->SetModel(glm::scale(bladeModel, glm::vec3(0.75f, bladeLength, 0.75f)));
+			sphere->SetModel(glm::scale(bladeModel, glm::vec3(0.5f, bladeLength, 0.5f)));
 
 			glm::mat3 bladeModelViewN = glm::mat3(view * bladeModel);
 			bladeModelViewN = glm::transpose(glm::inverse(bladeModelViewN));
@@ -229,7 +229,7 @@ void Colissions()
 			glm::mat4 bladeModel = wmModel;
 			GLfloat rotAngle = ((360.0f / wm->numBlades) * bladeID) + (ftime * rotTimeMult);
 			bladeModel = glm::rotate(bladeModel, rotAngle, glm::vec3(0.0, 0.0, 1.0));
-			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 2.0, 0.0));
+			bladeModel = glm::translate(bladeModel, glm::vec3(0.0, 1.0, 0.0));
 			glm::vec3 bladeCenter = glm::vec3(bladeModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 			// Iterate through all the bullets and check bounding sphere proximity
@@ -237,7 +237,7 @@ void Colissions()
 			for (vector<Bullet>::iterator it = bullets.begin(); it != bullets.end(); ++it) {
 				glm::vec3 bulletPos = it->startPos + ((ftime - it->startTime) * bulletSpeed * it->direction);
 
-				if (glm::distance(bulletPos, bladeCenter) < (bulletSize + bladeLength - 0.75f)) { // HIT!
+				if (glm::distance(bulletPos, bladeCenter) < (bulletSize + bladeLength)) { // HIT!
 					// Kill the bullet and that blade of the windmill
 					BulletsToKill.push_back(*it);
 					*bladeit = false;
@@ -278,7 +278,7 @@ void RenderObjects()
 	glUniformMatrix4fv(params.viewParameter,1,GL_FALSE,glm::value_ptr(view));
 	//set the light
 	static glm::vec4 pos;
-	pos.x=20*sin(ftime/12);pos.y=-10;pos.z=20*cos(ftime/12);pos.w=1;
+	pos.x=20*sin(ftime/12);pos.y=10;pos.z=20*cos(ftime/12);pos.w=1;
 	light.SetPos(pos);
 	light.SetShaders();
 
