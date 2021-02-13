@@ -311,3 +311,12 @@ void Bullet::shoot(GLfloat startTime, glm::vec3 startPos, glm::vec3 direction)
 	this->direction = direction;
 	this->startPos = startPos;
 }
+
+bool Bullet::operator==(const Bullet& other)
+{
+	bool acc = true;
+	acc &= this->startTime == other.startTime;
+	acc &= this->direction == other.direction;
+	acc &= this->startPos == other.startPos;
+	return acc;
+}

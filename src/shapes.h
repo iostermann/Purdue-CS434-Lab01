@@ -115,6 +115,8 @@ public:
 	glm::vec3 startPos;
 	Bullet();
 	void shoot(GLfloat startTime, glm::vec3 startPos, glm::vec3 direction);
+
+	bool operator ==(const Bullet& other);
 };
 
 #endif

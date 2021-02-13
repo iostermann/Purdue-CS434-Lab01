@@ -233,21 +233,22 @@ void Colissions()
 			glm::vec3 bladeCenter = glm::vec3(bladeModel * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 			// Iterate through all the bullets and check bounding sphere proximity
-			vector<vector<Bullet>::iterator> BulletsToKill;
+			vector<Bullet> BulletsToKill;
 			for (vector<Bullet>::iterator it = bullets.begin(); it != bullets.end(); ++it) {
 				glm::vec3 bulletPos = it->startPos + ((ftime - it->startTime) * bulletSpeed * it->direction);
 
 				if (glm::distance(bulletPos, bladeCenter) < (bulletSize + bladeLength - 0.75f)) { // HIT!
 					// Kill the bullet and that blade of the windmill
-					BulletsToKill.push_back(it);
+					BulletsToKill.push_back(*it);
 					*bladeit = false;
 					wm->bladesLeft--;
 
-				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(it); } // Cull bullets that are far away
+				} else if(glm::distance(bulletPos, bladeCenter) > 400 && false){ BulletsToKill.push_back(*it); } // Cull bullets that are far away
 			}
 			// Cull bullets that hit something or are far away
 			for (auto& bullet : BulletsToKill) { 
-				bullets.erase(bullet); 
+				// Need to erase like this because using a it doesn't let 2 bullets hit at once, which happens for fast bullets
+				bullets.erase(remove(bullets.begin(), bullets.end(),bullet)); 
 			}
 		}
 		if (wm->bladesLeft <= 0) { WindmillsToKill.push_back(windmillit); }
@@ -483,7 +484,7 @@ int main(int argc, char **argv)
   glutKeyboardFunc(Kbd); //+ and -
   glutSpecialUpFunc(SpecKbdRelease); //smooth motion
   glutSpecialFunc(SpecKbdPress);
-  glutIgnoreKeyRepeat(true);
+  glutIgnoreKeyRepeat(true); // Disable full auto mode...
   InitializeProgram(&shaderProgram);
   InitShapes(&params);
   glutMainLoop();
